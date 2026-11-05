@@ -1,0 +1,42 @@
+name: Build APK
+on: [workflow_dispatch, push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          unzip -q -o ./*.zip
+          ls
+
+      - name: Use Chaquopy 17
+        run: sed -i 's/16\.1\.0/17.0.0/' python_studio_pro/tools/setup_android.sh
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+
+      - name: Setup Android project
+        run: bash tools/setup_android.sh
+        working-directory: python_studio_pro
+
+      - name: Pub get
+        run: flutter pub get
+        working-directory: python_studio_pro
+
+      - name: Build APK
+        run: flutter build apk --debug
+        working-directory: python_studio_pro
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-studio-debug-apk
+          path: python_studio_pro/build/app/outputs/flutter-apk/app-debug.apk
