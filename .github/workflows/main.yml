@@ -12,6 +12,9 @@ jobs:
           unzip -q -o ./*.zip
           ls
 
+      - name: Fix Dart dollar sign
+        run: sed -i 's/\$ python \${/\\$ python ${/' python_studio_pro/lib/main.dart
+
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17' }
 
